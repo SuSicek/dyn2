@@ -4,13 +4,13 @@ $username = "leteckyj";
 $password = "cisco123";
 $dbname = "leteckyj_jdm";
 
+// Připojení k databázi
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$pageTitle = "Japonská sportovní auta";
-
+// Funkce: Načti všechna auta
 function getAllCars($conn) {
     $sql = "SELECT * FROM sports_cars ORDER BY manufacturer, model";
     $result = $conn->query($sql);
@@ -23,6 +23,7 @@ function getAllCars($conn) {
     return $cars;
 }
 
+// Funkce: Výrobci
 function getManufacturersFromCars($cars) {
     $manufacturers = [];
     foreach ($cars as $car) {
@@ -33,6 +34,7 @@ function getManufacturersFromCars($cars) {
     return $manufacturers;
 }
 
+// Zpracování formuláře
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_car"])) {
     $model = $_POST["model"];
     $year = $_POST["year"];
@@ -57,13 +59,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_car"])) {
     }
 }
 
+// Načtení aut a výrobců
 $cars = getAllCars($conn);
 $manufacturers = getManufacturersFromCars($cars);
 
+// Top 3 nejvýkonnější auta
 $topPowerfulCars = $cars;
 usort($topPowerfulCars, fn($a, $b) => $b['horsepower'] - $a['horsepower']);
 $topPowerfulCars = array_slice($topPowerfulCars, 0, 3);
 
+// Funkce pro formátování ceny
 function formatPrice($price) {
     return number_format($price, 0, ',', ' ') . " Kč";
 }
@@ -73,21 +78,22 @@ function formatPrice($price) {
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title><?= $pageTitle ?></title>
+    <title>Japonská sportovní auta</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-    <h1><?= $pageTitle ?></h1>
 
-    <?php if (isset($_GET['success'])): ?>
-        <p class="success">Auto bylo úspěšně přidáno.</p>
-    <?php endif; ?>
+    <!-- Logo -->
+    <div class="logo-wrapper">
+        <img src="logo.png" alt="Logo" class="logo">
+    </div>
 
     <?php if (isset($error)): ?>
         <p class="error"><?= $error ?></p>
     <?php endif; ?>
 
+    <!-- Formulář pro přidání auta -->
     <div class="formular-box">
         <h2>Přidat nové auto</h2>
         <form method="post">
@@ -111,10 +117,11 @@ function formatPrice($price) {
                 <label for="price">Cena:</label>
                 <input type="number" name="price" id="price" required>
             </div>
-            <button type="submit" name="add_car">Přidat auto</button>
+            <button type="submit" name="add_car"><span>Přidat auto</span></button>
         </form>
     </div>
 
+    <!-- Výpis aut podle výrobce -->
     <h2>Auta podle výrobce</h2>
     <?php foreach ($manufacturers as $maker): ?>
         <div class="kategorie-box">
@@ -135,6 +142,7 @@ function formatPrice($price) {
         </div>
     <?php endforeach; ?>
 
+    <!-- Výpis TOP 3 nejvýkonnějších aut -->
     <h2>Top 3 nejvýkonnější auta</h2>
     <div class="cars-container">
         <?php foreach ($topPowerfulCars as $car): ?>
